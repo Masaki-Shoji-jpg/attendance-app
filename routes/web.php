@@ -13,6 +13,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/attendance',fn() => response('準備中'));
+//Route::get('/attendance',[Controller::class,'index']);
