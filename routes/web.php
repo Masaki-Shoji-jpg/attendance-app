@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AttendanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::get('/attendance',fn() => response('準備中'));
-//Route::get('/attendance',[Controller::class,'index']);
+//Route::get('/attendance',fn() => response('準備中'));
+Route::get('/attendance',[AttendanceController::class,'attendance']);
+Route::get('/attendance/list',[AttendanceController::class,'index']);
+Route::get('/attendance/list/{id}',[AttendanceController::class,'show']);
