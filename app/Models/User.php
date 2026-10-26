@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\Attendance;
+use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -46,5 +48,17 @@ class User extends Authenticatable
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function getAttendanceStatusAttribute(){
+        $today = Carbon::today()->format('Y-m-d');
+        $attendance = \App\Models\Attendance::where('user_id', $this->id)
+                            ->where('date', $today)
+                            ->first();
+
+        if (!$attendance) {
+            return '勤務外';
+        }
+        return $attendance->status;
     }
 }
