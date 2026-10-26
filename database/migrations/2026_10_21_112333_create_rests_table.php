@@ -6,16 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('rests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('attendance_id')->constrained()->onDelete('cascade');
             $table->dateTime('rest_in');
-            $table->dateTime('rest_out');
+            $table->dateTime('rest_out')->nullable();
             $table->timestamps();
         });
     }
