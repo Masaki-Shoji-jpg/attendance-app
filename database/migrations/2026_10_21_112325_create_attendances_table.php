@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('comment')->nullable();
             $table->string('status')->default('勤務外');
             $table->boolean('is_approved')->default(false);
+
             $table->timestamps();
 
             $table->unique(['user_id', 'date']);
