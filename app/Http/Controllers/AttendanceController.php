@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Attendance;
 use App\Models\User;
 use App\Models\Rest;
+use App\Http\Requests\StoreAttendanceApplicationRequest;
 
 class AttendanceController extends Controller
 {
@@ -37,14 +39,14 @@ class AttendanceController extends Controller
                 'user_id'  => Auth::id(),
                 'date'     => $today,
                 'clock_in' => $now,
-                'status'   => '出勤中',
+                'status'   => 'working',
             ]);
             return redirect()->back();
         }
         //休憩入
         if ($action === 'break_in') {
             $attendance->update([
-                'status' => '休憩中',
+                'status' => 'on_break',
             ]);
             Rest::create([
                 'attendance_id' => $attendance->id,
@@ -59,13 +61,13 @@ class AttendanceController extends Controller
                             ->latest()->first();
             if ($latestRest) {
                 $latestRest->update(['rest_out' => $now,]);
-                $attendance->update(['status' => '出勤中',]);
+                $attendance->update(['status' => 'working',]);
             }
         return redirect()->back();
         }
         //退勤
         if ($action === 'clock_out') {
-            $attendance->update(['status' => '退勤済','clock_out' => $now,]);
+            $attendance->update(['status' => 'closed','clock_out' => $now,]);
             return redirect()->back();
         }
     }
@@ -100,7 +102,7 @@ class AttendanceController extends Controller
                     'date' => $displayDate,
                     'clock_in' => $attendance -> clock_in->format('H:i'),
                     'clock_out' => $attendance?->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : null,
-                    'total_break_time' =>$attendance->total_breal_time,
+                    'total_break_time' =>$attendance->total_break_time,
                     'total_time' =>$attendance->total_time,
                     'id'               => $attendance->id,
                 ];
@@ -119,33 +121,81 @@ class AttendanceController extends Controller
 
 
     public function show($id){
-        $attendance = Attendance::with(['rests', 'user'])->findOrFail($id);
+        $attendance = Attendance::with([
+            'rests', 'user','attendanceCorrections.correctionRests',
+            ])->findOrFail($id);
         $user = $attendance->user;
         $attendanceDate = \Carbon\Carbon::parse($attendance->date);
         $breaks = [];
 
-        foreach ($attendance->rests as $rest) {
-            $breaks[] = [
-                'break_in'  => $rest->rest_in  ? \Carbon\Carbon::parse($rest->rest_in)->format('H:i')  : null,
-                'break_out' => $rest->rest_out ? \Carbon\Carbon::parse($rest->rest_out)->format('H:i') : null,
+        if($attendance->is_applied){
+            $attendanceCorrection = $attendance->attendanceCorrections->first();
+            foreach ($attendanceCorrection->correctionRests as $rest) {
+                $breaks[] = [
+                    'break_in'  => \Carbon\Carbon::parse($rest->updated_rest_in)->format('H:i'),
+                    'break_out' => \Carbon\Carbon::parse($rest->updated_rest_out)->format('H:i'),
+                ];
+            }
+
+            $data = [
+                'id'     => $attendance->id,
+                'clock_in'    => \Carbon\Carbon::parse($attendanceCorrection->updated_clock_in)->format('H:i'),
+                'clock_out'   => \Carbon\Carbon::parse($attendanceCorrection->updated_clock_out)->format('H:i'),
+                'year'   => $attendanceDate->format('Y年'),
+                'date'   => $attendanceDate->isoFormat('M月D日'),
+                'comment' =>$attendanceCorrection->comment,
+                'breaks' => $breaks,
+                'application' =>true,
+            ];
+        }else{
+            foreach ($attendance->rests as $rest) {
+                $breaks[] = [
+                    'break_in'  => $rest->rest_in  ? \Carbon\Carbon::parse($rest->rest_in)->format('H:i')  : null,
+                    'break_out' => $rest->rest_out ? \Carbon\Carbon::parse($rest->rest_out)->format('H:i') : null,
+                ];
+            }
+
+            $data = [
+                'id'     => $attendance->id,
+                'clock_in'  => $attendance->clock_in->format('H:i'),
+                'clock_out' => $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : null,
+                'year'   => $attendanceDate->format('Y年'),
+                'date'   => $attendanceDate->isoFormat('M月D日'),
+                'comment' =>null,
+                'breaks' => $breaks,
+                'application' =>null,
             ];
         }
-
-        $data = [
-            'id'     => $attendance->id,
-            'clock_in'  => $attendance->clock_in->format('H:i'),
-            'clock_out' => $attendance->clock_out ? \Carbon\Carbon::parse($attendance->clock_out)->format('H:i') : null,
-            'year'   => $attendanceDate->format('Y年'),
-            'date'   => $attendanceDate->isoFormat('M月D日'),
-            'comment' =>$attendance ->comment,
-            'breaks' => $breaks,
-            'application' => $attendance->is_approved ? true : null,
-        ];
 
     return view('user.user-detail', compact('user','data'));
     }
 
-    public function edit(){
-        
+    public function store(StoreAttendanceApplicationRequest $request, $id){
+        $attendance = Attendance::findOrFail($id);
+        $validated = $request->validated();
+
+        DB::transaction(function () use ($validated, $attendance) {
+            $application = $attendance->attendanceCorrections()->create([
+                'updated_clock_in' => $validated['new_clock_in'],
+                'updated_clock_out'   => $validated['new_clock_out'],
+                'comment'           => $validated['comment'],
+                'is_approved'       => false,
+            ]);
+            if (!empty($validated['new_break_in'])){
+            foreach ($validated['new_break_in'] as $index => $breakIn) {
+                // 終了時間も存在するかチェック
+                $breakOut = $validated['new_break_out'][$index] ?? null;
+
+                if (!empty($breakIn) && !empty($breakOut)) {
+                    $application->correctionRests()->create([
+                        'updated_rest_in'  => $breakIn,
+                        'updated_rest_out' => $breakOut,
+                    ]);
+                }
+            }
+        }
+            $attendance->update(['is_applied' => true]);
+        });
+        return redirect()->back();
     }
 }
