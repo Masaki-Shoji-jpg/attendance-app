@@ -21,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('/attendance/{id}', '/attendance/detail/{id}');
     Route::get('/attendance/detail/{id}',[AttendanceController::class,'show']);
     Route::post('/attendance/{id}',[AttendanceController::class,'store']);
+
+    Route::get('stamp_correction_request/list',[AttendanceController::class,'correctList']);
+    Route::redirect('/application/{id}', '/attendance/detail/{id}');
+
 });
 
 Route::middleware(['auth', 'admin'])->group(function () {

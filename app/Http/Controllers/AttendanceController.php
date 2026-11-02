@@ -72,7 +72,6 @@ class AttendanceController extends Controller
         }
     }
 
-
     public function index(Request $request)
     {
         $currentMonthStr = $request->input('date', Carbon::now()->format('Y-m'));
@@ -197,5 +196,24 @@ class AttendanceController extends Controller
             $attendance->update(['is_applied' => true]);
         });
         return redirect()->back();
+    }
+
+    public function correctList(){
+
+        $user = User::with(['attendances.attendancecorrections'])->find(Auth::id());
+        $formattedApplications=[];
+
+        foreach ($user->attendances as $attendance) {
+            foreach ($attendance->attendanceCorrections as $attendanceCorrection) {
+                $formattedApplications[] =[
+                    'approval_status' =>$attendanceCorrection->status_label,
+                    'date' =>$attendance->date->isoformat('YYYY/MM/DD'),
+                    'comment' =>$attendanceCorrection->comment,
+                    'application_date'=>$attendanceCorrection->created_at->isoformat('YYYY/MM/DD'),
+                    'id' => $attendanceCorrection->id,
+                ];
+            }
+        }
+        return view('user.user-application-list',compact('user','formattedApplications'));
     }
 }
