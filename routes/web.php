@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AttendanceController;
-
+use App\Http\Controllers\AdminController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -21,4 +21,9 @@ Route::middleware(['auth'])->group(function () {
     Route::redirect('/attendance/{id}', '/attendance/detail/{id}');
     Route::get('/attendance/detail/{id}',[AttendanceController::class,'show']);
     Route::post('/attendance/{id}',[AttendanceController::class,'store']);
+});
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin/staff/list', [AdminController::class, 'staffList']);
+
 });

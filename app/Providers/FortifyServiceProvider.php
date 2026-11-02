@@ -13,7 +13,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
-use Laravel\Fortify\Contracts\LogoutResponse;
+use Laravel\Fortify\Contracts\LogoutResponse as LogoutResponseContract;
+use Laravel\Fortify\Contracts\LoginResponse;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Responses\LogoutResponse;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -56,6 +59,20 @@ class FortifyServiceProvider extends ServiceProvider
         //register画面
         Fortify::registerView(function () {
             return view('user.register');
+        });
+        //logout
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
+
+        //adminログイン用
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
+        public function toResponse($request)
+        {
+            $user = Auth::user();
+            if ($user && $user->is_admin) {
+                return redirect()->intended('/admin/staff/list');
+            }
+            return redirect()->intended(config('fortify.home'));
+            }
         });
     }
 }
