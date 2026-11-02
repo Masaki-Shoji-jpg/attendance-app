@@ -15,14 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->date('date');
-            $table->dateTime('clock_in')->nullable();
-            $table->dateTime('clock_out')->nullable();
+            $table->time('clock_in');
+            $table->time('clock_out')->nullable();
             $table->string('comment')->nullable();
-            $table->string('status')->default('勤務外');
-            $table->boolean('is_approved')->default(false);
-
+            $table->string('status')->default('off');
+            //申請中か否か
+            $table->boolean('is_applied')->default(false);
             $table->timestamps();
-
             $table->unique(['user_id', 'date']);
         });
     }

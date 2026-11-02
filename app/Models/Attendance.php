@@ -17,6 +17,7 @@ class Attendance extends Model
         'clock_out',
         'comment',
         'status',
+        'is_applied',
     ];
 
     public function user()
@@ -29,17 +30,23 @@ class Attendance extends Model
         return $this->hasMany(Rest::class);
     }
 
+    public function attendanceCorrections()
+    {
+        return $this->hasMany(AttendanceCorrection::class);
+    }
+
     protected $casts = [
         'date' => 'date:Y-m-d',
         'clock_in' => 'datetime:H:i',
         'clock_out' => 'datetime:H:i',
     ];
+
 //休憩秒数
     private function getBreakSeconds(){
             $breakSeconds = 0;
             foreach ($this->rests as $rest) {
                 if ($rest->rest_in && $rest->rest_out) {
-                $breakSeconds += Carbon::parse($rest->rest_in)->diffInSeconds(Carbon::parse($rest->rest_out));
+                $breakSeconds += Carbon::parse($rest->rest_in)->diffInMinutes(Carbon::parse($rest->rest_out));
                 }
             }
         return $breakSeconds;

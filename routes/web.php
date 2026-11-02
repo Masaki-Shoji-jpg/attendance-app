@@ -20,5 +20,5 @@ Route::middleware(['auth'])->group(function () {
 
     Route::redirect('/attendance/{id}', '/attendance/detail/{id}');
     Route::get('/attendance/detail/{id}',[AttendanceController::class,'show']);
-    Route::post('/attendance/detail/{id}',[AttendanceController::class,'edit']);
+    Route::post('/attendance/{id}',[AttendanceController::class,'store']);
 });

@@ -56,9 +56,14 @@ class User extends Authenticatable
                             ->where('date', $today)
                             ->first();
 
-        if (!$attendance) {
-            return '勤務外';
+        if (!$attendance) {return '勤務外';
         }
-        return $attendance->status;
+        return match ($attendance->status) {
+            'off'         => '勤務外',
+            'working'     => '出勤中',
+            'on_break'    => '休憩中',
+            'closed'      => '退勤済',
+            default       => '勤務外',
+        };
     }
 }
