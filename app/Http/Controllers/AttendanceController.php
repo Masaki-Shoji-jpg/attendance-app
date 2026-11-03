@@ -216,4 +216,8 @@ class AttendanceController extends Controller
         }
         return view('user.user-application-list',compact('user','formattedApplications'));
     }
+
+    public function welcome(){
+        return view('welcome');
+    }
 }
