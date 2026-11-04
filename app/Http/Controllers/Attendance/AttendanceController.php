@@ -1,6 +1,7 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Attendance;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -117,8 +118,6 @@ class AttendanceController extends Controller
         return view('user.user-attendance-list', compact('formattedAttendanceRecords', 'previousMonth', 'nextMonth', 'date'));
     }
 
-
-
     public function show($id){
         $attendance = Attendance::with([
             'rests', 'user','attendanceCorrections.correctionRests',
@@ -199,7 +198,6 @@ class AttendanceController extends Controller
     }
 
     public function correctList(){
-
         $user = User::with(['attendances.attendancecorrections'])->find(Auth::id());
         $formattedApplications=[];
 
@@ -210,7 +208,7 @@ class AttendanceController extends Controller
                     'date' =>$attendance->date->isoformat('YYYY/MM/DD'),
                     'comment' =>$attendanceCorrection->comment,
                     'application_date'=>$attendanceCorrection->created_at->isoformat('YYYY/MM/DD'),
-                    'id' => $attendanceCorrection->id,
+                    'id' => $attendance->id,
                 ];
             }
         }
