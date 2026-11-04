@@ -31,5 +31,7 @@ Route::post('/admin/login', [AdminLoginController::class, 'doLogin']);
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/attendance/list', [AdminController::class, 'todayList']);
-    Route::get('admin/staff/list', [AdminLoginController::class, 'login']);
+    Route::get('admin/staff/list', [AdminController::class, 'staffList']);
+    Route::get('/admin/attendance/staff/{id}', [AdminController::class, 'staffIndex']);
+    Route::get('/admin/attendance/{id}', [AdminController::class, 'staffShow']);
 });
