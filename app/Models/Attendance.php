@@ -46,7 +46,7 @@ class Attendance extends Model
             $breakSeconds = 0;
             foreach ($this->rests as $rest) {
                 if ($rest->rest_in && $rest->rest_out) {
-                $breakSeconds += Carbon::parse($rest->rest_in)->diffInMinutes(Carbon::parse($rest->rest_out));
+                $breakSeconds += Carbon::parse($rest->rest_in)->diffInSeconds(Carbon::parse($rest->rest_out));
                 }
             }
         return $breakSeconds;
