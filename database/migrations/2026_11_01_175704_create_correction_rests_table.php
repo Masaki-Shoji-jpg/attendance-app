@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('correction_rests', function (Blueprint $table) {
+        Schema::create('rest_corrections', function (Blueprint $table) {
             $table->id();
             $table->foreignId('attendance_correction_id')->constrained()->onDelete('cascade');
             $table->time('updated_rest_in');
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('correction_rests');
+        Schema::dropIfExists('rest_corrections');
     }
 };

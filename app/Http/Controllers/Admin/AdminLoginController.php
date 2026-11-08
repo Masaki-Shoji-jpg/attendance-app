@@ -28,4 +28,11 @@ class AdminLoginController extends Controller
             'email' => 'ログイン情報が登録されていません',
         ]);
     }
+
+    public function logout(Request $request){
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->to('/admin/login');
+    }
 }

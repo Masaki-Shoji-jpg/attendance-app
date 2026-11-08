@@ -5,8 +5,12 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Attendance;
+use App\Models\AttendanceCorrection;
+use App\Models\RestCorrection;
+use App\Http\Requests\StoreAttendanceApplicationRequest;
 
 class AdminController extends Controller
 {
@@ -75,7 +79,71 @@ class AdminController extends Controller
         compact('user','date','previousMonth','nextMonth','formattedAttendanceRecords'));
     }
 
-    public function staffShow(){
-        return view('admin.admin-detail');
+    public function staffShow($id){
+        $attendance = Attendance::with('rests')->find($id);
+        $user = $attendance->user;
+        $breaks = [];
+        if ($attendance->rests->isNotEmpty()) {
+            foreach ($attendance->rests as $rest) {
+                $breaks[] = [
+                    'break_in'  => $rest->rest_in  ? \Carbon\Carbon::parse($rest->rest_in)->format('H:i')  : null,
+                    'break_out' => $rest->rest_out ? \Carbon\Carbon::parse($rest->rest_out)->format('H:i') : null,
+                ];
+            }
+        }
+        $attendanceRecord=[
+            'year'=>$attendance->date->format('Y年'),
+            'date'=>$attendance->date->isoFormat('M月D日'),
+            'clock_in'=>$attendance->clock_in->format('H:i'),
+            'clock_out'=>$attendance->clock_out?->format('H:i'),
+            'breaks' =>$breaks,
+            'comment'=>null,
+            'id'=>$id,
+        ];
+        return view('admin.admin-detail',compact('user','attendanceRecord'));
     }
+
+    public function update(StoreAttendanceApplicationRequest $request,$id){
+        $attendance = Attendance::with('rests')->find($id);
+        $validated = $request->validated();
+
+
+        DB::transaction(function () use ($validated, $attendance,$request){
+            $attendance->rests()->delete();
+            $attendance->update([
+                'clock_in'=>$request->input('new_clock_in'),
+                'clock_out'=>$request->input('new_clock_out'),
+                'status'=>'closed',
+                'is_applied'=>false,
+            ]);
+
+            $attendanceCorrection = AttendanceCorrection::create([
+                'attendance_id'=> $attendance->id,
+                'updated_clock_in'=> $request->input('new_clock_in'),
+                'updated_clock_out'=> $request->input('new_clock_out'),
+                'comment'=>$request->input('comment'),
+                'is_approved'=>true,
+            ]);
+
+            $breakIns = $request->input('new_break_in', []);
+            $breakOuts = $request->input('new_break_out', []);
+            foreach ($breakIns as $index => $breakIn) {
+                $breakOut = $breakOuts[$index] ?? null;
+                if (is_null($breakIn) || $breakIn === '') {
+                    continue;
+                }
+                $attendance->rests()->create([
+                    'rest_in'=> $breakIn,
+                    'rest_out'=> $breakOut,
+                ]);
+                RestCorrection::create([
+                    'attendance_correction_id' => $attendanceCorrection->id,
+                    'updated_rest_in' => $breakIn,
+                    'updated_rest_out' => $breakOut,
+                ]);
+            }
+        });
+        return redirect()->back();
+    }
+
 }

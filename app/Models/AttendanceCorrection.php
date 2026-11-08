@@ -23,14 +23,13 @@ class AttendanceCorrection extends Model
         return $this->belongsTo(Attendance::class);
     }
 
-    public function correctionRests()
+    public function restCorrections()
     {
-        return $this->hasMany(CorrectionRest::class);
+        return $this->hasMany(RestCorrection::class);
     }
 
-    //修正申請ステータス判定用
     protected function statusLabel(): Attribute
     {
-        return Attribute::get(fn () => $this->is_approve ? '承認済み' : '承認待ち');
+        return Attribute::get(fn () => $this->is_approved ? '承認済み' : '承認待ち');
     }
 }
