@@ -120,7 +120,7 @@ class AttendanceController extends Controller
 
     public function show($id){
         $attendance = Attendance::with([
-            'rests', 'user','attendanceCorrections.correctionRests',
+            'rests', 'user','attendanceCorrections.restCorrections',
             ])->findOrFail($id);
         $user = $attendance->user;
         $attendanceDate = \Carbon\Carbon::parse($attendance->date);
@@ -128,7 +128,7 @@ class AttendanceController extends Controller
 
         if($attendance->is_applied){
             $attendanceCorrection = $attendance->attendanceCorrections->first();
-            foreach ($attendanceCorrection->correctionRests as $rest) {
+            foreach ($attendanceCorrection->restCorrections as $rest) {
                 $breaks[] = [
                     'break_in'  => \Carbon\Carbon::parse($rest->updated_rest_in)->format('H:i'),
                     'break_out' => \Carbon\Carbon::parse($rest->updated_rest_out)->format('H:i'),
@@ -164,7 +164,6 @@ class AttendanceController extends Controller
                 'application' =>null,
             ];
         }
-
     return view('user.user-detail', compact('user','data'));
     }
 
@@ -185,7 +184,7 @@ class AttendanceController extends Controller
                 $breakOut = $validated['new_break_out'][$index] ?? null;
 
                 if (!empty($breakIn) && !empty($breakOut)) {
-                    $application->correctionRests()->create([
+                    $application->restCorrections()->create([
                         'updated_rest_in'  => $breakIn,
                         'updated_rest_out' => $breakOut,
                     ]);
@@ -193,6 +192,7 @@ class AttendanceController extends Controller
             }
         }
             $attendance->update(['is_applied' => true]);
+            $attendance->update(['status' => 'closed']);
         });
         return redirect()->back();
     }
@@ -212,7 +212,7 @@ class AttendanceController extends Controller
                 ];
             }
         }
-        return view('user.user-application-list',compact('user','formattedApplications'));
+        return view('admin.admin-application-list',compact('user','formattedApplications'));
     }
 
     public function welcome(){
