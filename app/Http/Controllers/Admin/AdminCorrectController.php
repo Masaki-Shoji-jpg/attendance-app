@@ -19,28 +19,68 @@ class AdminCorrectController extends Controller
 
         foreach ($attendances as $attendance) {
             foreach ($attendance->attendanceCorrections as $attendanceCorrection) {
-                $appObject = new \ArrayObject([], \ArrayObject::ARRAY_AS_PROPS);
+                $application = $attendanceCorrection;
+                $application->approval_status = $attendanceCorrection->status_label;
+                $application->user = $attendance->user;
+                $application->AttendanceRecord = $attendance;
+                $application->id = $attendanceCorrection->id;
+                $application->application_date = $attendanceCorrection->created_at;
 
-            $appObject['approval_status']  = $attendanceCorrection->status_label;
-            $appObject['comment']          = $attendanceCorrection->comment;
-            $appObject['application_date'] = $attendanceCorrection->created_at;
-            $appObject['id']               = $attendance->id;
-
-            $userObj = new \ArrayObject([], \ArrayObject::ARRAY_AS_PROPS);
-            $userObj['name'] = $attendance->user->name ?? '不明';
-            $appObject['user'] = $userObj;
-
-            $recordObj = new \ArrayObject([], \ArrayObject::ARRAY_AS_PROPS);
-            $recordObj['date'] = $attendance->date;
-            $appObject['AttendanceRecord'] = $recordObj;
-
-            $applications[] = $appObject;
+                $applications[] = $application;
             }
         }
-        return response(view('admin.admin-application-list',compact('applications')));
+        $sortedApplications = collect($applications)->sortByDesc('created_at')->values()->all();
+        return response(view('admin.admin-application-list',['applications'=> $sortedApplications]));
     }
 
-    public function correctShow(){
-        return view('admin.admin-application-detail');
+    public function correctShow($id){
+        $attendanceCorrection = AttendanceCorrection::with('attendance.user','restCorrections')
+        ->where('id',$id)->first();
+        $user = $attendanceCorrection;
+        $application = $attendanceCorrection;
+
+        $user->name = $attendanceCorrection->attendance->user->name;
+        $application->new_date = $attendanceCorrection->attendance->date;
+        $application->new_clock_in = \Carbon\Carbon::parse($attendanceCorrection->updated_clock_in)->format('H:i');
+        $application->new_clock_out = \Carbon\Carbon::parse($attendanceCorrection->updated_clock_out)->format('H:i');
+        $application->approval_status = $attendanceCorrection->status_label;
+
+        $proposalBreaks = $attendanceCorrection->restCorrections;
+        foreach ($proposalBreaks as $break) {
+            $break->break_in = $break->updated_rest_in;
+            $break->break_out = $break->updated_rest_out;
+        }
+        $application->proposalBreaks = $proposalBreaks;
+
+        return view('admin.admin-application-detail',compact('application','user'));
+    }
+
+    public function approve($id){
+        $attendanceCorrection = AttendanceCorrection::with('attendance.user','restCorrections')
+        ->where('id',$id)->first();
+
+        DB::transaction(function() use($attendanceCorrection){
+            $attendanceCorrection->update([
+                'is_approved'=>true,
+            ]);
+            $attendanceCorrection->attendance->update([
+                'clock_in'=>$attendanceCorrection->updated_clock_in,
+                'clock_out'=>$attendanceCorrection->updated_clock_out,
+                'is_applied'=>false,
+            ]);
+
+            $attendance = $attendanceCorrection->attendance;
+            $attendance->rests()->delete();
+            if ($attendanceCorrection->restCorrections->isNotEmpty()){
+                foreach ($attendanceCorrection->restCorrections as $restCorrection){
+                    $attendance->rests()->create([
+                        'attendance_id'=>$attendance->id,
+                        'rest_in'=>$restCorrection->updated_rest_in,
+                        'rest_out'=>$restCorrection->updated_rest_out,
+                    ]);
+                }
+            }
+        });
+        return redirect()->back();
     }
 }

@@ -106,9 +106,16 @@ class AdminController extends Controller
     public function update(StoreAttendanceApplicationRequest $request,$id){
         $attendance = Attendance::with('rests')->find($id);
         $validated = $request->validated();
+        $latestCorrection = AttendanceCorrection::where('attendance_id', $id)->latest()->first();
 
 
-        DB::transaction(function () use ($validated, $attendance,$request){
+        DB::transaction(function () use ($validated, $attendance,$request,$latestCorrection){
+            if($latestCorrection){
+                $latestCorrection->update([
+                    'is_approved'=>true,
+                ]);
+            }
+
             $attendance->rests()->delete();
             $attendance->update([
                 'clock_in'=>$request->input('new_clock_in'),

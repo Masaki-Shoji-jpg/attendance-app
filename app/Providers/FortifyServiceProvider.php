@@ -62,7 +62,7 @@ class FortifyServiceProvider extends ServiceProvider
         });
         //logout
         $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
-
+        $this->app->singleton(LogoutResponseContract::class, LogoutResponse::class);
         //adminログイン用
         $this->app->instance(LoginResponse::class, new class implements LoginResponse {
         public function toResponse($request)

@@ -20,6 +20,6 @@ class RoleCheckMiddleware
         if(Auth::user()->is_admin) {
             return app()->call('App\Http\Controllers\Admin\AdminCorrectController@correctList');
         }
-        return response($view);
+        return $next($request);
     }
 }
