@@ -209,10 +209,13 @@ class AttendanceController extends Controller
                     'comment' =>$attendanceCorrection->comment,
                     'application_date'=>$attendanceCorrection->created_at->isoformat('YYYY/MM/DD'),
                     'id' => $attendance->id,
+                    'created_at' => $attendanceCorrection->created_at,
                 ];
             }
         }
-        return view('admin.admin-application-list',compact('user','formattedApplications'));
+        $sortedApplications = collect($formattedApplications)->sortByDesc('created_at')->values()->all();
+        $formattedApplications = $sortedApplications;
+        return response(view('user.user-application-list',compact('user','formattedApplications')));
     }
 
     public function welcome(){
