@@ -42,8 +42,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
     Route::get('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'correctShow']);
     Route::post('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'approve']);
-    
+
     Route::post('/admin/logout', [AdminLoginController::class, 'logout']);
 });
-
-Route::get('/',[AttendanceController::class,'welcome']);

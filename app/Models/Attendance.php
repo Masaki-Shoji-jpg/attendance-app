@@ -70,4 +70,52 @@ class Attendance extends Model
         return $workSeconds > 0 ? gmdate('H:i', $workSeconds) : '00:00';
     }
 
+    //report画面
+    private function getBreakSecond(){
+        $breakSeconds = 0;
+        foreach ($this->rests as $rest) {
+            if ($rest->rest_in && $rest->rest_out) {
+                $breakSeconds += Carbon::parse($rest->rest_in)->diffInSeconds(Carbon::parse($rest->rest_out));
+            }
+        }
+        return $breakSeconds;
+    }
+
+    public function getTotalWorkMinutesAttribute(){
+        $staySeconds = 0;
+        $staySeconds = Carbon::parse($this->clock_in)->diffInSeconds(Carbon::parse($this->clock_out));
+        $breakSeconds = $this->getBreakSecond();
+        $workMinutes = ($staySeconds - $breakSeconds)/60;
+        return (int)$workMinutes;
+    }
+
+    public function getTotalOvertimeMinutesAttribute(){
+        $workMinutes = $this->total_work_minutes;
+        $overtimeMinutes = max(0, $workMinutes - 480);
+        return (int)$overtimeMinutes;
+    }
+
+    public function getLateCountAttribute(){
+        if (empty($this->clock_in)) {
+            return 0;
+        }
+        $clockIn = Carbon::parse($this->clock_in)->format('H:i:s');
+        return $clockIn > '09:00:00' ? 1 : 0;
+    }
+
+    public function getEarlyLeaveCountAttribute(){
+        if (empty($this->clock_out)) {
+            return 0;
+        }
+        $clockOut = Carbon::parse($this->clock_out)->format('H:i:s');
+        return $clockOut < '18:00:00' ? 1 : 0;
+    }
+
+    public function getLongWorkCountAttribute(){
+        $staySeconds = 0;
+        $staySeconds = Carbon::parse($this->clock_in)->diffInSeconds(Carbon::parse($this->clock_out));
+        $breakSeconds = $this->getBreakSecond();
+        $workMinutes = ($staySeconds - $breakSeconds)/60;
+        return $workMinutes > 600 ? 1 : 0;
+    }
 }

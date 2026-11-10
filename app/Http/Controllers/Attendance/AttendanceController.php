@@ -218,7 +218,45 @@ class AttendanceController extends Controller
         return response(view('user.user-application-list',compact('user','formattedApplications')));
     }
 
-    public function welcome(){
-        return view('welcome');
+    public function report(){
+        $firstMonthDay = Carbon::now()->subMonths(5)->startOfMonth();
+        $firstDay = Carbon::now()->startOfMonth();
+        $lastDay = Carbon::now()->endOfMonth();
+
+        $attendances = Attendance::with('user','rests')->where('user_id',Auth::id())
+            ->whereBetween('date', [$firstMonthDay, $lastDay])->get();
+        $dayCount = $attendances->count();
+        $totalWorkMinutes = $attendances->sum('total_work_minutes');
+
+        $summary = [
+            'total_work_minutes' => $totalWorkMinutes,
+            'total_overtime_minutes' => $attendances->sum('total_overtime_minutes'),
+            'avg_work_minutes' => $dayCount > 0 ? (int)($totalWorkMinutes / $dayCount) : 0,
+        ];
+
+        $monthlyTrend = [];
+        for($day = 0 ; $day < 6 ; $day++){
+            $currentMonth = Carbon::now()->subMonths($day);
+            $month = $currentMonth->format('Y-m');
+            $currentMonthAttendances = $attendances->filter(function ($attendance) use ($month) {
+                return Carbon::parse($attendance->date)->format('Y-m') === $month;
+            });
+            $monthlyTrend[] =[
+                'month' => $month,
+                'work_minutes' => $currentMonthAttendances->sum('total_work_minutes'),
+                'overtime_minutes' => $currentMonthAttendances->sum('total_overtime_minutes'),
+            ];
+        }
+
+        $thisMonth = Carbon::now()->format('Y-m');
+        $currentMonthAttendances = $attendances->filter(function ($attendance) use ($thisMonth) {
+            return Carbon::parse($attendance->date)->format('Y-m') === $thisMonth;
+        });
+        $anomalies =[
+            'late_count' => $currentMonthAttendances->sum('late_count'),
+            'early_leave_count' => $currentMonthAttendances->sum('early_leave_count'),
+            'long_work_count' => $currentMonthAttendances->sum('long_work_count'),
+        ];
+        return view('reports.index',compact('summary','monthlyTrend','anomalies'));
     }
 }
