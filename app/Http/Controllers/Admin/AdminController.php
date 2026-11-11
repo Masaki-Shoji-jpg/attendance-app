@@ -23,7 +23,7 @@ class AdminController extends Controller
         $previousDay = $date->copy()->subDay();
         $nextDay = $date->copy()->addDay();
 
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('admin_status', false)->get();
         $attendanceRecords = Attendance::whereDate('date', $date)->get();
 
         return view('admin/admin-attendance-list',
@@ -31,7 +31,7 @@ class AdminController extends Controller
     }
 
     public function staffList(){
-        $users = User::where('is_admin', false)->get();
+        $users = User::where('admin_status', false)->get();
         return view('admin.staff-list',compact('users'));
     }
 

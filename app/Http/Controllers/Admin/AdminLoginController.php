@@ -16,7 +16,7 @@ class AdminLoginController extends Controller
     public function doLogin(LoginRequest $request){
     $credentials = $request->validated();
         if (Auth::attempt($credentials)) {
-            if (Auth::user()->is_admin) {
+            if (Auth::user()->admin_status) {
                 $request->session()->regenerate();
                 return redirect()->intended('/admin/attendance/list');
             }

@@ -17,7 +17,7 @@ class RoleCheckMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(Auth::user()->is_admin) {
+        if(Auth::user()->admin_status) {
             return app()->call('App\Http\Controllers\Admin\AdminCorrectController@correctList');
         }
         return $next($request);

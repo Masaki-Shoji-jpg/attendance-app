@@ -6,7 +6,8 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminCorrectController;
 use App\Http\Middleware\RoleCheckMiddleware;
-use App\Http\Controllers\Auth\EmailVerificationController;
+use App\Http\Controllers\Advance\EmailVerificationController;
+use App\Http\Controllers\Advance\ExportController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,22 +45,19 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'correctShow']);
     Route::post('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'approve']);
 
+    Route::post('/export',[ExportController::class,'export']);
+
     Route::post('/admin/logout', [AdminLoginController::class, 'logout']);
 });
 
 Route::middleware('auth')->group(function () {
-
-    // ① メール認証を促す通知画面（verifiedに引っかかるとここにとびます）
     Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
         ->name('verification.notice');
 
-    // ② メール内の確認リンクをクリックしたときの認証完了処理
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware(['signed']) // 署名付きURLの検証（改ざん防止）
+        ->middleware(['signed'])
         ->name('verification.verify');
 
-    // ③ 認証メールの再送信処理
     Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])
-        ->middleware(['throttle:6,1']) // 連打防止（1分間に6回まで）
-        ->name('verification.send');
+        ->middleware(['throttle:6,1'])->name('verification.send');
 });
