@@ -5,9 +5,9 @@ use App\Http\Controllers\Attendance\AttendanceController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminCorrectController;
-use App\Http\Middleware\RoleCheckMiddleware;
 use App\Http\Controllers\Advance\EmailVerificationController;
 use App\Http\Controllers\Advance\ExportController;
+use App\Http\Middleware\RoleCheckMiddleware;
 /*
 |--------------------------------------------------------------------------
 | Web Routes

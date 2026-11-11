@@ -17,12 +17,10 @@ return new class extends Migration
             $table->time('updated_clock_in');
             $table->time('updated_clock_out');
             $table->string('comment');
-            //承認受付
             $table->boolean('is_approved')->default(false);
             $table->timestamps();
         });
     }
-
     /**
      * Reverse the migrations.
      */
