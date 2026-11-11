@@ -17,7 +17,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (Auth::check() && Auth::user()->is_admin) {
+        if (Auth::check() && Auth::user()->admin_status) {
             return $next($request);
         }
         return redirect('/attendance')->with('error', '管理者権限がありません。');

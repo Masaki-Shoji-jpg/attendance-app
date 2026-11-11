@@ -259,4 +259,6 @@ class AttendanceController extends Controller
         ];
         return view('reports.index',compact('summary','monthlyTrend','anomalies'));
     }
+
+    
 }

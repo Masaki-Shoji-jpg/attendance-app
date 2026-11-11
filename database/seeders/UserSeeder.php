@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'email' => 'user1@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'is_admin' => false,
+                'admin_status' => false,
             ]
         );
         User::create(
@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
                 'email' => 'user2@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'is_admin' => false,
+                'admin_status' => false,
             ]
         );
         User::create(
@@ -38,7 +38,7 @@ class UserSeeder extends Seeder
                 'email' => 'user3@example.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'is_admin' => true,
+                'admin_status' => true,
             ]
         );
     }
