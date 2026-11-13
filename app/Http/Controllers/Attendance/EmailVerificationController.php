@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Advance;
+namespace App\Http\Controllers\Attendance;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
