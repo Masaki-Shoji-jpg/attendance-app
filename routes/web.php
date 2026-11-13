@@ -2,11 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Attendance\AttendanceController;
+use App\Http\Controllers\Attendance\EmailVerificationController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminLoginController;
 use App\Http\Controllers\Admin\AdminCorrectController;
-use App\Http\Controllers\Advance\EmailVerificationController;
-use App\Http\Controllers\Advance\ExportController;
+use App\Http\Controllers\Admin\ExportController;
 use App\Http\Middleware\RoleCheckMiddleware;
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/admin/login', [AdminLoginController::class, 'login']);
 Route::post('/admin/login', [AdminLoginController::class, 'doLogin']);
+Route::post('/admin/logout', [AdminLoginController::class, 'logout']);
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/admin/attendance/list', [AdminController::class, 'todayList']);
@@ -46,8 +47,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'approve']);
 
     Route::post('/export',[ExportController::class,'export']);
-
-    Route::post('/admin/logout', [AdminLoginController::class, 'logout']);
 });
 
 Route::middleware('auth')->group(function () {
