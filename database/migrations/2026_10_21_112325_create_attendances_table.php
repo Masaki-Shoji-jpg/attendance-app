@@ -17,7 +17,6 @@ return new class extends Migration
             $table->date('date');
             $table->time('clock_in');
             $table->time('clock_out')->nullable();
-            $table->string('status')->default('off');
             $table->boolean('is_applied')->default(false);
             $table->timestamps();
             $table->unique(['user_id', 'date']);

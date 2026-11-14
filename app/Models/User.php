@@ -52,18 +52,17 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function getAttendanceStatusAttribute(){
         $today = Carbon::today()->format('Y-m-d');
-        $attendance = \App\Models\Attendance::where('user_id', $this->id)
-                            ->where('date', $today)
-                            ->first();
+        $attendance = $this->attendances()->where('date', $today)->first();
 
-        if (!$attendance) {return '勤務外';
+        if (!$attendance) {
+            return '勤務外';
         }
-        return match ($attendance->status) {
-            'off'         => '勤務外',
-            'working'     => '出勤中',
-            'on_break'    => '休憩中',
-            'closed'      => '退勤済',
-            default       => '勤務外',
-        };
+        if ($attendance->clock_out) {
+            return '退勤済';
+        }
+        if ($attendance->rests()->whereNull('rest_out')->exists()) {
+            return '休憩中';
+        }
+            return '出勤中';
     }
 }

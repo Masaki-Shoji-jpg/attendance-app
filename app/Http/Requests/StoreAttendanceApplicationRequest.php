@@ -40,7 +40,7 @@ class StoreAttendanceApplicationRequest extends FormRequest
             'new_clock_in.date_format'    => '出勤時間もしくは退勤時間が不適切な値です',
             'new_clock_out.required'      => '出勤時間もしくは退勤時間が不適切な値です',
             'new_clock_out.date_format'   => '出勤時間もしくは退勤時間が不適切な値です',
-            'new_clock_out.after'         => '出勤時間もしくは退勤時間が不適切な値です',
+            'new_clock_out.after'         => '出勤時間が不適切な値です',
             'comment.required'            => '備考を記入してください',
 
             'new_break_in.*.date_format'    => '休憩時間が不適切な値です',

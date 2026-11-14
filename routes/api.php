@@ -15,10 +15,10 @@ use App\Http\Controllers\Api\V1\AttendanceRecordController;
 */
 Route::prefix('v1')->group(function () {
     Route::apiResource('attendance-records', AttendanceRecordsController::class)
-            ->only(['index', 'show']);
+            ->only(['index',]);
 
     Route::middleware('auth:sanctum')->group(function (){
         Route::apiResource('attendance-records', AttendanceRecordController::class)
-            ->except(['index', 'show']);
+            ->except(['index',]);
     });
 });
