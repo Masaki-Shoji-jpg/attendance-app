@@ -37,7 +37,6 @@ class AttendanceSeeder extends Seeder
                     'clock_out' => '18:00:00',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'status' =>'closed',
                 ]);
             }
         }
@@ -68,7 +67,6 @@ class AttendanceSeeder extends Seeder
                     'clock_out' => $date . ' 18:00:00',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'status' =>'closed',
                 ]);
             }elseif($day<13){
                 DB::table('attendances')->insert([
@@ -78,7 +76,6 @@ class AttendanceSeeder extends Seeder
                     'clock_out' => $date . ' 20:00:00',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'status' =>'closed',
                 ]);
             }elseif($day<15){
                 DB::table('attendances')->insert([
@@ -88,7 +85,6 @@ class AttendanceSeeder extends Seeder
                     'clock_out' => $date . ' 18:00:00',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'status' =>'closed',
                 ]);
             }elseif($day<16){
                 DB::table('attendances')->insert([
@@ -98,7 +94,6 @@ class AttendanceSeeder extends Seeder
                     'clock_out' => $date . ' 17:00:00',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'status' =>'closed',
                 ]);
             }else{
                 DB::table('attendances')->insert([
@@ -108,7 +103,6 @@ class AttendanceSeeder extends Seeder
                     'clock_out' => $date . ' 21:00:00',
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
-                    'status' =>'closed',
                 ]);
             }
         }

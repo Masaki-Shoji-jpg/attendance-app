@@ -40,15 +40,11 @@ class AttendanceController extends Controller
                 'user_id'  => Auth::id(),
                 'date'     => $today,
                 'clock_in' => $now,
-                'status'   => 'working',
             ]);
             return redirect()->back();
         }
         //休憩入
         if ($action === 'break_in') {
-            $attendance->update([
-                'status' => 'on_break',
-            ]);
             Rest::create([
                 'attendance_id' => $attendance->id,
                 'rest_in'       => $now,
@@ -62,13 +58,12 @@ class AttendanceController extends Controller
                             ->latest()->first();
             if ($latestRest) {
                 $latestRest->update(['rest_out' => $now,]);
-                $attendance->update(['status' => 'working',]);
             }
         return redirect()->back();
         }
         //退勤
         if ($action === 'clock_out') {
-            $attendance->update(['status' => 'closed','clock_out' => $now,]);
+            $attendance->update(['clock_out' => $now,]);
             return redirect()->back();
         }
     }
@@ -192,7 +187,6 @@ class AttendanceController extends Controller
             }
         }
             $attendance->update(['is_applied' => true]);
-            $attendance->update(['status' => 'closed']);
         });
         return redirect()->back();
     }

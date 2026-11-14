@@ -10,7 +10,7 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\AttendanceCorrection;
 use App\Models\RestCorrection;
-use App\Http\Requests\StoreAttendanceApplicationRequest;
+use App\Http\Requests\Admin\AttendanceUpdateRequest;
 
 class AdminController extends Controller
 {
@@ -103,7 +103,7 @@ class AdminController extends Controller
         return view('admin.admin-detail',compact('user','attendanceRecord'));
     }
 
-    public function update(StoreAttendanceApplicationRequest $request,$id){
+    public function update(AttendanceUpdateRequest $request,$id){
         $attendance = Attendance::with('rests')->find($id);
         $validated = $request->validated();
         $latestCorrection = AttendanceCorrection::where('attendance_id', $id)->latest()->first();
@@ -120,7 +120,6 @@ class AdminController extends Controller
             $attendance->update([
                 'clock_in'=>$request->input('new_clock_in'),
                 'clock_out'=>$request->input('new_clock_out'),
-                'status'=>'closed',
                 'is_applied'=>false,
             ]);
 
