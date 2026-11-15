@@ -35,7 +35,7 @@ Route::get('/admin/login', [AdminLoginController::class, 'login']);
 Route::post('/admin/login', [AdminLoginController::class, 'doLogin']);
 Route::post('/admin/logout', [AdminLoginController::class, 'logout']);
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', 'verified'])->group(function () {
     Route::get('/admin/attendance/list', [AdminController::class, 'todayList']);
     Route::get('admin/staff/list', [AdminController::class, 'staffList']);
     Route::get('/admin/attendance/staff/{id}', [AdminController::class, 'staffIndex']);
@@ -43,8 +43,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::post('/admin/attendance/{id}', [AdminController::class, 'update']);
     Route::get('/attendance/{id}', [AdminController::class, 'staffShow']);
 
-    Route::get('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'correctShow']);
-    Route::post('/stamp_correction_request/approve/{id}', [AdminCorrectController::class, 'approve']);
+    Route::get('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminCorrectController::class, 'correctShow']);
+    Route::post('/stamp_correction_request/approve/{attendance_correct_request_id}', [AdminCorrectController::class, 'approve']);
 
     Route::post('/export',[ExportController::class,'export']);
 });

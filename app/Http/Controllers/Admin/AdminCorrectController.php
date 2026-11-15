@@ -33,7 +33,8 @@ class AdminCorrectController extends Controller
         return response(view('admin.admin-application-list',['applications'=> $sortedApplications]));
     }
 
-    public function correctShow($id){
+    public function correctShow($attendance_correct_request_id){
+        $id = $attendance_correct_request_id;
         $attendanceCorrection = AttendanceCorrection::with('attendance.user','restCorrections')
         ->where('id',$id)->first();
         $user = $attendanceCorrection;
@@ -55,7 +56,8 @@ class AdminCorrectController extends Controller
         return view('admin.admin-application-detail',compact('application','user'));
     }
 
-    public function approve($id){
+    public function approve($attendance_correct_request_id){
+        $id = $attendance_correct_request_id;
         $attendanceCorrection = AttendanceCorrection::with('attendance.user','restCorrections')
         ->where('id',$id)->first();
 
