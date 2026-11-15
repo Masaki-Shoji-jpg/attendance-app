@@ -14,11 +14,11 @@ use App\Http\Controllers\Api\V1\AttendanceRecordController;
 |
 */
 Route::prefix('v1')->group(function () {
-    Route::apiResource('attendance-records', AttendanceRecordsController::class)
-            ->only(['index',]);
+    Route::apiResource('attendance-records', AttendanceRecordController::class)
+            ->only(['index','show']);
 
     Route::middleware('auth:sanctum')->group(function (){
         Route::apiResource('attendance-records', AttendanceRecordController::class)
-            ->except(['index',]);
+            ->except(['index','show']);
     });
 });

@@ -22,7 +22,20 @@ class IndexAttendanceRecordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // user_id/date/month/page/per_page
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'date' => ['nullable', 'date_format:Y-m-d'],
+            'month' => ['nullable', 'date_format:Y-m'],
+            'page' => ['nullable', 'integer', 'min:1'],
+            'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'comment' =>['nullable','string'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'page'     => $this->input('page', 1),
+            'per_page' => $this->input('per_page', 20),
+        ]);
     }
 }
