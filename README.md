@@ -139,7 +139,7 @@ export default defineConfig({
 - PHPUnit
 
 ## ER図
-<img src="./images/attendance-ER.png" width="500">
+<img src="./public/images/attendance-ER.png" width="500">
 
 ## APIエンドポイント一覧
 | メソッド | エンドポイント | 説明 |
@@ -153,34 +153,35 @@ export default defineConfig({
 ## テスト
 ### 実行コマンド
 ```
+./vendor/bin/sail php artisan test
 ```
 
 ### 実行結果
 ```
-- 63 passed
-- 186 assertions
+63 passed
+186 assertions
 ```
 
 ### 実行内容
 ```
-- 認証機能
-- ログイン認証機能
-- 日時取得機能
-- ステータス確認機能
-- 勤怠登録機能
-- 勤怠一覧情報取得機能
-- 勤怠詳細情報取得機能
-- 勤怠詳細情報修正機能
-- 勤怠情報修正申請承認機能
+認証機能
+ログイン認証機能
+日時取得機能
+ステータス確認機能
+勤怠登録機能
+勤怠一覧情報取得機能
+勤怠詳細情報取得機能
+勤怠詳細情報修正機能
+勤怠情報修正申請承認機能
 ```
 
 ## URL
-開発環境:http://localhost
-phpMyAdmin:http://localhost:8080
-Mailpit:http://localhost:8025
+- 開発環境:http://localhost
+- phpMyAdmin:http://localhost:8080
+- Mailpit:http://localhost:8025
 
-一般ユーザーログイン画面:http://localhost/login
-管理者ログイン画面:http://localhost/admin/login
+- 一般ユーザーログイン画面:http://localhost/login
+- 管理者ログイン画面:http://localhost/admin/login
 
 ## 作成者
 小路　真輝
