@@ -43,11 +43,17 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'admin_status'      => 'boolean',
     ];
 
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function attendanceRecords()
+    {
+        return $this->hasMany(AttendanceRecord::class);
     }
 
     public function getAttendanceStatusAttribute(){

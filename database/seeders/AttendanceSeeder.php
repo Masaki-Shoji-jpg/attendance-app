@@ -6,13 +6,15 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use App\Models\User;
+use App\Models\Attendance;
 class AttendanceSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void{
+        //user1作為的データ投入
         for ($i = 1; $i <= 5; $i++) {
             $targetMonth = Carbon::now()->subMonths($i)->startOfMonth();
             $weekdaysInMonth = [];
@@ -104,6 +106,28 @@ class AttendanceSeeder extends Seeder
                     'created_at' => Carbon::now(),
                     'updated_at' => Carbon::now(),
                 ]);
+            }
+        }
+
+        //user2データ投入
+        $user = User::where('email', 'user2@example.com')->first();
+        for ($i = 0; $i <= 5; $i++) {
+            $targetMonth = Carbon::now()->subMonths($i)->startOfMonth();
+            $weekdaysInMonth = [];
+            $daysInMonth = $targetMonth->daysInMonth;
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = $targetMonth->copy()->day($day);
+
+                if ($date->isWeekday()) {
+                    $clockIn = Carbon::createFromTime(8, 45, 0)->addMinutes(rand(0, 30));
+                    $clockOut = Carbon::createFromTime(17, 45, 0)->addMinutes(rand(0, 75));
+                    $attendance = Attendance::create([
+                        'user_id'   => $user->id,
+                        'date'      => $date,
+                        'clock_in'  => $clockIn,
+                        'clock_out' => $clockOut,
+                    ]);
+                }
             }
         }
     }

@@ -4,48 +4,69 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Arr;
+use App\Models\AttendanceRecord;
+use App\Http\Requests\Api\V1\IndexAttendanceRecordRequest;
+use App\Http\Resources\Api\V1\AttendanceRecordResource;
+use App\Http\Requests\Api\V1\StoreAttendanceRecordRequest;
+use App\Http\Requests\Api\V1\UpdateAttendanceRecordRequest;
 class AttendanceRecordController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(IndexAttendanceRecordRequest $request)
     {
-        $attendance = Attendance::where('user_id',);
-        
-        return response()->json($tasks);
+        $validated = $request->validated();
+        $attendanceRecords = AttendanceRecord::with(['user', 'rests'])
+        ->when(!empty($validated['user_id']), function ($query) use ($validated) {
+            $query->where('user_id', $validated['user_id']);
+        })
+        ->when(!empty($validated['date']), function ($query) use ($validated) {
+            $query->whereDate('date', $validated['date']);
+        })
+        ->when(!empty($validated['month']), function ($query) use ($validated) {
+            $query->where('date', 'like', "{$validated['month']}%");
+        })
+        ->orderBy('date', 'desc')
+        ->paginate(
+            perPage: $validated['per_page'],
+            page: $validated['page']
+        );
+
+        return AttendanceRecordResource::collection($attendanceRecords);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreAttendanceRecordRequest $request)
     {
-        //
+        $data = Arr::except($request->validated(), ['comment']);
+        $attendanceRecord = $request->user()->attendanceRecords()->create($data);
+
+        $attendanceRecord->load(['user', 'rests']);
+
+        return new AttendanceRecordResource($attendanceRecord);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(AttendanceRecord $attendanceRecord)
     {
-        //
+        $attendanceRecord->load(['user', 'rests','attendance_corrections']);
+
+        return new AttendanceRecordResource($attendanceRecord);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, AttendanceRecord $attendanceRecord)
+    public function update(UpdateAttendanceRecordRequest $request, AttendanceRecord $attendanceRecord)
     {
-        //
+        $this->authorize('update', $attendanceRecord);
+
+        $validated = Arr::except($request->validated(), ['comment']);
+        $attendanceRecord->update($validated);
+
+        $attendanceRecord->load(['user', 'rests', 'attendance_corrections']);
+
+        return new AttendanceRecordResource($attendanceRecord);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(AttendanceRecord $attendanceRecord)
     {
-        //
+        $this->authorize('delete', $attendanceRecord);
+        $attendanceRecord->delete();
+        return response()->noContent();
     }
 }
