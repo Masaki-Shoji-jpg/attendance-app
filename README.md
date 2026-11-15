@@ -7,7 +7,7 @@ COACHTECH 勤怠管理アプリ
 
 ## 環境構築手順
 1. Laravel 10 プロジェクトを新規作成（最新版を避けるためバージョンを明示）
-
+```
 以下のDockerコマンドを実行して、Laravel 10.xを明示的に指定してプロジェクトを作成します。
 
 docker run --rm \
@@ -17,17 +17,17 @@ docker run --rm \
   laravelsail/php82-composer:latest \
   composer create-project laravel/laravel:^10.0 attendance-app
 cd attendance-app
-
+```
 2. Laravel Sail を導入（mysql, mailpit）
-
+```
 "docker run --rm -u ""$(id -u):$(id -g)"" -v ""$(pwd):/var/www/html"" -w /var/www/html \
   laravelsail/php82-composer:latest \
   php artisan sail:install --with=mysql,mailpit
 
-# Apple Silicon(M1/M2/M3/M4等)の場合は compose.yaml の mysql に「platform: 'linux/amd64'」を追記。"
-
+Apple Silicon(M1/M2/M3/M4等)の場合は compose.yaml の mysql に「platform: 'linux/amd64'」を追記。"
+```
 3. phpMyAdmin を compose.yaml に追記（mysql の下に追加）
-
+```
 compose.yaml を開き、mysql サービスの後に以下の設定を追加してください。
 
 phpmyadmin:
@@ -42,9 +42,9 @@ phpmyadmin:
     - sail
   depends_on:
     - mysql
-
+```
 4. .env を編集（DB / メール）
-
+```
 .env ファイルを開き、データベース接続情報が以下と一致していることを確認します。
 
 DB_CONNECTION=mysql
@@ -57,15 +57,15 @@ DB_PASSWORD=password
 MAIL_MAILER=smtp
 MAIL_HOST=mailpit
 MAIL_PORT=1025
-
+```
 5. 提供Bladeの移入（以下の「提供Bladeについて」を参照）
-
+```
 "git clone -b basic https://github.com/coachtech-prepared-file/Preparedblade-mockcase-Attendance.git
 # → クローンした resources/ を、自分のプロジェクトの resources/ に上書きコピー
 # （応用機能の着手時に advanced ブランチの resources/ を再移入）"
-
+```
 6. フロントエンド（Vite）
-
+```
 vite.config.js を以下の内容に置き換える（提供CSSを個別に入力指定する）
 
 import { defineConfig } from 'vite';
@@ -98,9 +98,9 @@ export default defineConfig({
     }),
   ],
 });"
-
+```
 7. アプリ起動 & 初期化
-
+```
 ./vendor/bin/sail up -d
 ./vendor/bin/sail artisan key:generate
 ./vendor/bin/sail artisan migrate --seed
@@ -110,13 +110,8 @@ export default defineConfig({
 
 ■ 指定技術スタック外のパッケージは追加しないこと（laravel-lang/* 等）。
   日本語化は lang/ へメッセージファイルを手動配置して対応する（サプライチェーン攻撃対策）
-
-8. アクセス
-
-アプリ: http://localhost   / phpMyAdmin: http://localhost:8080 / Mailpit: http://localhost:8025
-
+```
 ## 初期データ
-
 ### 1. ユーザー1（一般ユーザー）
 ```
 メールアドレス: user1@example.com
@@ -134,12 +129,13 @@ export default defineConfig({
 ```
 
 ## 使用技術(実行環境)
-- PHP 8.2 / Laravel 10
+- PHP 8.2 / Laravel 10.x
 - MySQL 8.0
 - Nginx
 - Docker, Laravel Sail, phpMyAdmin
 - Mailpit
-- Vite
+- Node.js 18.19
+- npm 9.2
 - PHPUnit
 
 ## ER図
@@ -154,10 +150,37 @@ export default defineConfig({
 | `PUT` | `/api/v1/attendance-records/{attendanceRecord}` | 勤怠更新 |
 | `DELETE` | `/api/v1/attendance-records/{attendanceRecord}` | 勤怠削除 |
 
+## テスト
+### 実行コマンド
+```
+```
+
+### 実行結果
+```
+- 63 passed
+- 186 assertions
+```
+
+### 実行内容
+```
+- 認証機能
+- ログイン認証機能
+- 日時取得機能
+- ステータス確認機能
+- 勤怠登録機能
+- 勤怠一覧情報取得機能
+- 勤怠詳細情報取得機能
+- 勤怠詳細情報修正機能
+- 勤怠情報修正申請承認機能
+```
+
 ## URL
 開発環境:http://localhost
 phpMyAdmin:http://localhost:8080
+Mailpit:http://localhost:8025
 
+一般ユーザーログイン画面:http://localhost/login
+管理者ログイン画面:http://localhost/admin/login
 
 ## 作成者
 小路　真輝
