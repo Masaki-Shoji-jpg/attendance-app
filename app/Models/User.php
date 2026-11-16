@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Attendance;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -46,17 +46,23 @@ class User extends Authenticatable implements MustVerifyEmail
         'admin_status'      => 'boolean',
     ];
 
-    public function attendances()
+    public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
     }
 
-    public function attendanceRecords()
+    public function attendanceRecords(): HasMany
     {
         return $this->hasMany(AttendanceRecord::class);
     }
 
-    public function getAttendanceStatusAttribute(){
+    /**
+     * ユーザーの現在の勤怠ステータス（勤務外・出勤中・休憩中・退勤済）を取得する
+     *
+     * @return string 現在の勤怠ステータス
+     */
+    public function getAttendanceStatusAttribute(): string
+    {
         $today = Carbon::today()->format('Y-m-d');
         $attendance = $this->attendances()->where('date', $today)->first();
 

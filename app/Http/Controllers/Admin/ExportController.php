@@ -11,6 +11,12 @@ use Illuminate\Support\Facades\Response;
 
 class ExportController extends Controller
 {
+     /**
+     * 指定したスタッフの月次勤怠データをCSV形式でダウンロード出力する
+     *
+     * @param Request $request 対象年月とユーザーIDを含むリクエスト
+     * @return Response CSVダウンロードレスポンス
+     */
     public function export(Request $request){
         $currentMonthStr = $request->input('year_month', Carbon::now()->format('Y-m'));
 

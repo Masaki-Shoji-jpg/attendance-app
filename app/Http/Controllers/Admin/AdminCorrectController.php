@@ -2,38 +2,46 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\View\View;
+use Illuminate\Http\Response;
+use Illuminate\Http\RedirectResponse;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
 use App\Models\Attendance;
 use App\Models\AttendanceCorrection;
-use App\Models\RestCorrection;
-use App\Http\Requests\StoreAttendanceApplicationRequest;
 
 class AdminCorrectController extends Controller
 {
-    public function correctList(){
-        $attendances = Attendance::with('user','attendanceCorrections')->latest()->get();
-        $applications = [];
+    /**
+     * 勤怠修正申請一覧画面を表示する
+     *
+     * @return Response 修正申請一覧レスポンス
+     */
+    public function correctList(): Response
+    {
+         $attendances = Attendance::with('user', 'attendanceCorrections')->latest()->get();
 
-        foreach ($attendances as $attendance) {
-            foreach ($attendance->attendanceCorrections as $attendanceCorrection) {
-                $application = $attendanceCorrection;
-                $application->approval_status = $attendanceCorrection->status_label;
-                $application->user = $attendance->user;
-                $application->AttendanceRecord = $attendance;
-                $application->id = $attendanceCorrection->id;
-                $application->application_date = $attendanceCorrection->created_at;
+        $sortedApplications = $attendances->flatMap(function ($attendance) {
+                return $attendance->attendanceCorrections->map(function ($correction) use ($attendance) {
+                    $correction->approval_status = $correction->status_label;
+                    $correction->user = $attendance->user;
+                    $correction->AttendanceRecord = $attendance;
+                    $correction->application_date = $correction->created_at;
+                    return $correction;
+                });
+            })->sortByDesc('created_at')->values()->all();
 
-                $applications[] = $application;
-            }
-        }
-        $sortedApplications = collect($applications)->sortByDesc('created_at')->values()->all();
         return response(view('admin.admin-application-list',['applications'=> $sortedApplications]));
     }
 
-    public function correctShow($attendance_correct_request_id){
+    /**
+     * 指定した勤怠修正申請の詳細画面を表示する
+     *
+     * @param int $attendance_correct_request_id 修正申請ID
+     * @return View 修正申請詳細ビュー
+     */
+    public function correctShow($attendance_correct_request_id): View
+    {
         $id = $attendance_correct_request_id;
         $attendanceCorrection = AttendanceCorrection::with('attendance.user','restCorrections')
         ->where('id',$id)->first();
@@ -46,17 +54,23 @@ class AdminCorrectController extends Controller
         $application->new_clock_out = \Carbon\Carbon::parse($attendanceCorrection->updated_clock_out)->format('H:i');
         $application->approval_status = $attendanceCorrection->status_label;
 
-        $proposalBreaks = $attendanceCorrection->restCorrections;
-        foreach ($proposalBreaks as $break) {
+        $application->proposalBreaks = $attendanceCorrection->restCorrections->map(function ($break) {
             $break->break_in = $break->updated_rest_in;
             $break->break_out = $break->updated_rest_out;
-        }
-        $application->proposalBreaks = $proposalBreaks;
+            return $break;
+        });
 
         return view('admin.admin-application-detail',compact('application','user'));
     }
 
-    public function approve($attendance_correct_request_id){
+    /**
+     * 勤怠修正申請を承認し、勤怠データおよび休憩データを更新する
+     *
+     * @param int $attendance_correct_request_id 修正申請ID
+     * @return RedirectResponse 元の画面へのリダイレクトレスポンス
+     */
+    public function approve($attendance_correct_request_id): RedirectResponse
+    {
         $id = $attendance_correct_request_id;
         $attendanceCorrection = AttendanceCorrection::with('attendance.user','restCorrections')
         ->where('id',$id)->first();

@@ -22,16 +22,16 @@ class StoreAttendanceApplicationRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'new_clock_in'       => 'required|date_format:H:i',
-        'new_clock_out'      => 'required|date_format:H:i|after:new_clock_in',
-        'comment'            => 'required|string|max:255',
+            'new_clock_in'       => 'required|date_format:H:i',
+            'new_clock_out'      => 'required|date_format:H:i|after:new_clock_in',
+            'comment'            => 'required|string|max:255',
 
-        'new_break_in'       => 'nullable|array',
-        'new_break_in.*'     => 'nullable|required_with:new_break_out.*|date_format:H:i|after:new_clock_in|before:new_clock_out',
-        'new_break_out'      => 'nullable|array',
-        'new_break_out.*'    => 'nullable|required_with:new_break_in.*|date_format:H:i|after:new_break_in.*|before:new_clock_out',
-    ];
-}
+            'new_break_in'       => 'nullable|array',
+            'new_break_in.*'     => 'nullable|required_with:new_break_out.*|date_format:H:i|after:new_clock_in|before:new_clock_out',
+            'new_break_out'      => 'nullable|array',
+            'new_break_out.*'    => 'nullable|required_with:new_break_in.*|date_format:H:i|after:new_break_in.*|before:new_clock_out',
+        ];
+    }
 
     public function messages(): array
     {
@@ -54,6 +54,13 @@ class StoreAttendanceApplicationRequest extends FormRequest
             'new_break_out.*.required_with' => '休憩時間が不適切な値です',
         ];
     }
+
+    /**
+     * バリデーション実行後の追加検証（重複エラーメッセージの統合）を行う
+     *
+     * @param Validator $validator バリデータインスタンス
+     * @return void
+     */
     public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator) {
