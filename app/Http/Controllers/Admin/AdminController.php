@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
@@ -14,8 +16,13 @@ use App\Http\Requests\Admin\AttendanceUpdateRequest;
 
 class AdminController extends Controller
 {
-
-    public function todayList(Request $request)
+    /**
+     * 一般ユーザーの日次勤怠一覧画面を表示する
+     *
+     * @param Request $request 日付指定パラメータを含むリクエスト
+     * @return View 日次勤怠一覧ビュー
+     */
+    public function todayList(Request $request): View
     {
         $dateString = $request->input('date', Carbon::today()->toDateString());
 
@@ -24,18 +31,32 @@ class AdminController extends Controller
         $nextDay = $date->copy()->addDay();
 
         $users = User::where('admin_status', false)->get();
-        $attendanceRecords = Attendance::whereDate('date', $date)->get();
+        $attendanceRecords = Attendance::with(['user', 'rests'])->whereDate('date', $date)->get();
 
         return view('admin/admin-attendance-list',
         compact('date','previousDay','nextDay','users','attendanceRecords'));
     }
 
-    public function staffList(){
+    /**
+     * 一般ユーザー一覧画面を表示する
+     *
+     * @return View 一般ユーザー一覧ビュー
+     */
+    public function staffList(): View
+    {
         $users = User::where('admin_status', false)->get();
         return view('admin.staff-list',compact('users'));
     }
 
-    public function staffIndex(Request $request,$id){
+    /**
+     * 一般ユーザーの月次勤怠一覧画面を表示する
+     *
+     * @param Request $request 対象年月パラメータを含むリクエスト
+     * @param int $id　対象ユーザーID
+     * @return View 月次勤怠一覧ビュー
+     */
+    public function staffIndex(Request $request,$id): View
+    {
         $user = User::with(['attendances.rests'])->where('id', $id)->first();
         $currentMonthStr = $request->input('date', Carbon::now()->format('Y-m'));
 
@@ -79,7 +100,14 @@ class AdminController extends Controller
         compact('user','date','previousMonth','nextMonth','formattedAttendanceRecords'));
     }
 
-    public function staffShow($id){
+    /**
+     * 一般ユーザーの勤怠詳細画面を表示する
+     *
+     * @param int $id 対象勤怠ID
+     * @return View 勤怠詳細ビュー
+     */
+    public function staffShow($id): View
+    {
         $attendance = Attendance::with('rests')->find($id);
         $user = $attendance->user;
         $breaks = [];
@@ -103,7 +131,15 @@ class AdminController extends Controller
         return view('admin.admin-detail',compact('user','attendanceRecord'));
     }
 
-    public function update(AttendanceUpdateRequest $request,$id){
+    /**
+     * 一般ユーザーの勤怠を修正する
+     *
+     * @param AttendanceUpdateRequest $request バリデーション済みのリクエスト
+     * @param int $id 対象の勤怠ID
+     * @return RedirectResponse
+     */
+    public function update(AttendanceUpdateRequest $request,$id): RedirectResponse
+    {
         $attendance = Attendance::with('rests')->find($id);
         $validated = $request->validated();
         $latestCorrection = AttendanceCorrection::where('attendance_id', $id)->latest()->first();

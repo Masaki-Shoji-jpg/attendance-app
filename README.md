@@ -158,8 +158,8 @@ export default defineConfig({
 
 ### 実行結果
 ```
-63 passed
-186 assertions
+79 passed
+244 assertions
 ```
 
 ### 実行内容

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AttendanceRecord extends Model
 {
@@ -24,22 +26,28 @@ class AttendanceRecord extends Model
         'date' => 'date',
     ];
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function rests()
+    public function rests(): HasMany
     {
         return $this->hasMany(Rest::class, 'attendance_id');
     }
 
-    public function attendance_corrections()
+    public function attendance_corrections(): HasMany
     {
         return $this->hasMany(AttendanceCorrection::class, 'attendance_id');
     }
 
-    private function getBreakSeconds(){
+    /**
+    * 合計休憩時間（秒単位）を計算して取得する
+    *
+    * @return int 合計休憩秒数
+    */
+    private function getBreakSeconds(): int
+    {
             $breakSeconds = 0;
             foreach ($this->rests as $rest) {
                 if ($rest->rest_in && $rest->rest_out) {
@@ -48,14 +56,24 @@ class AttendanceRecord extends Model
             }
         return $breakSeconds;
     }
-//休憩時間(表示用)
-    public function getTotalBreakTimeAttribute()
+
+    /**
+     * API表示用の合計休憩時間（HH:MM形式）を取得する
+     *
+     * @return string 合計休憩時間
+     */
+    public function getTotalBreakTimeAttribute(): string
     {
         $seconds = $this->getBreakSeconds();
         return $seconds > 0 ? gmdate('H:i', $seconds) : '00:00';
     }
-//合計時間
-    public function getTotalTimeAttribute()
+
+    /**
+     * API表示用の実働時間（HH:MM形式）を取得する
+     *
+     * @return string 実働時間
+     */
+    public function getTotalTimeAttribute(): string
     {
         if (!$this->clock_in || !$this->clock_out) {
             return '00:00';
